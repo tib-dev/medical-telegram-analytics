@@ -1,0 +1,126 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medical_telegram_analytics"
+version = "0.1.0"
+description = "End-to-end Telegram data warehouse and analytics for Ethiopian medical businesses"
+readme = "README.md"
+requires-python = ">=3.10,<4.0"
+license = { text = "MIT" }
+
+authors = [
+    { name = "Tibebu K.", email = "wise.tibec@gmail.com" }
+]
+
+keywords = [
+    "telegram",
+    "data-warehouse",
+    "dbt",
+    "fastapi",
+    "etl",
+    "dagster",
+    "yolov8",
+    "analytics",
+    "healthcare",
+    "mlops"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries"
+]
+
+dependencies = [
+    "numpy",
+    "pandas",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "python-dotenv",
+    "pyyaml",
+    "telethon",
+    "ultralytics",
+    "dbt-postgres",
+    "dagster",
+    "dagit",
+    "requests",
+    "beautifulsoup4",
+    "lxml",
+    "matplotlib",
+    "seaborn"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "black",
+    "isort",
+    "flake8",
+    "pre-commit",
+    "mypy",
+    "jupyter"
+]
+
+[project.urls]
+Homepage = "https://github.com/tib-dev/medical-telegram-analytics"
+Documentation = "https://github.com/tib-dev/medical-telegram-analytics/docs"
+Source = "https://github.com/tib-dev/medical-telegram-analytics"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["tg_warehouse*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+exclude = '''
+/(
+    \.venv
+  | \.git
+  | \.dvc
+  | data
+  | logs
+  | dbt/medical_warehouse
+  | notebooks
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+src_paths = ["src"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".venv",
+    ".git",
+    "__pycache__",
+    "data",
+    "logs",
+    "dbt/medical_warehouse",
+    "notebooks"
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra --cov=tg_warehouse"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["tg_warehouse"]
+omit = [
+    "tests/*",
+    "src/tg_warehouse/api/*",
+    "notebooks/*"
+]
