@@ -3,53 +3,63 @@ stages:
     cmd: bash scripts/run_scraper.sh
     deps:
       - scripts/run_scraper.sh
+      - src/medi_tg_analytics/scraper.py
+      - requirements.txt
     outs:
-      - data/raw/telegram_messages
-      - data/raw/images
+      - data/raw/telegram_messages/
+      - data/raw/images/
+      - logs/scraper.log
 
-  enrich_images:
-    cmd: python -m tg_warehouse.enrichment.yolo_detect
+  load_raw_to_postgres:
+    cmd: |
+      bash scripts/run_raw_data_loader_to_postgres.sh && \
+      touch data/interim/raw_loaded.flag
     deps:
-      - src/tg_warehouse/enrichment/yolo_detect.py
-      - data/raw/images
+      - scripts/run_raw_data_loader_to_postgres.sh
+      - data/raw/telegram_messages/
+      - src/medi_tg_analytics/loading/load_raw_to_postgres.py
+      - requirements.txt
     outs:
-      - data/interim/images_features.pkl
-      - logs/enrichment
-
-  enrich_metadata:
-    cmd: python -m tg_warehouse.enrichment.ip_geolocation
-    deps:
-      - src/tg_warehouse/enrichment/ip_geolocation.py
-      - data/raw/telegram_messages
-    outs:
-      - data/interim/messages_metadata.pkl
-      - logs/enrichment
-
-  clean_data:
-    cmd: python -m tg_warehouse.loading.load_raw_to_postgres
-    deps:
-      - src/tg_warehouse/loading/load_raw_to_postgres.py
-      - data/interim/messages_metadata.pkl
-      - data/interim/images_features.pkl
-    outs:
-      - data/processed/messages_cleaned.parquet
-      - logs/loading
+      - data/interim/raw_loaded.flag
+      - logs/raw_loader.log
 
   dbt_transform:
-    cmd: bash scripts/run_dbt.sh
+    cmd: |
+      bash scripts/run_dbt.sh && \
+      mkdir -p data/processed/marts && \
+      dbt run --models +fct_messages +dim_channels +dim_dates && \
+      dbt docs generate && \
+      dbt run-operation export_marts_to_parquet
     deps:
-      - dbt/medical_warehouse/models
+      - dbt/medical_warehouse/models/
+      - dbt/medical_warehouse/macros/
       - dbt/medical_warehouse/dbt_project.yml
       - dbt/medical_warehouse/profiles.yml
-      - data/processed/messages_cleaned.parquet
+      - data/interim/raw_loaded.flag
     outs:
       - data/processed/marts/
-      - logs/dbt
+      - logs/dbt.log
+      - docs/dbt_docs/
 
-  run_pipeline:
-    cmd: dagster dev -f orchestration/pipeline.py
-    deps:
-      - orchestration/pipeline.py
-      - data/processed/marts/
-    outs:
-      - logs/dagster
+
+  # yolo_enrichment:
+  #   cmd: python src/yolo_detect.py
+  #   deps:
+  #     - src/yolo_detect.py
+  #     - data/raw/images/
+  #   outs:
+  #     - data/interim/yolo_detections.csv
+
+  # load_yolo_to_postgres:
+  #   cmd: python src/load_yolo_to_postgres.py
+  #   deps:
+  #     - src/load_yolo_to_postgres.py
+  #     - data/interim/yolo_detections.csv
+  #   outs:
+  #     - data/interim/yolo_loaded.flag
+
+  # dbt_test:
+  #   cmd: dbt test --project-dir dbt/medical_warehouse
+  #   deps:
+  #     - dbt/medical_warehouse/
+  #     - data/processed/marts/

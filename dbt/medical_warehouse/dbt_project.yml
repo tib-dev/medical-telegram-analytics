@@ -1,0 +1,51 @@
+
+
+name: 'medical_warehouse'
+version: '1.0'
+config-version: 2
+
+# Folder where dbt models are stored
+model-paths: ["models"]
+
+# Folder for tests
+test-paths: ["tests"]
+
+# Folder for snapshots (optional)
+snapshot-paths: ["snapshots"]
+
+# Folder for seeds (optional)
+seed-paths: ["seeds"]
+
+# Target database schema for models
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_modules"
+
+profile: 'medical_warehouse_profile'
+
+# Default settings for models
+models:
+  medical_warehouse:
+    # Staging models
+    staging:
+      +materialized: view
+    # Data marts
+    marts:
+      +materialized: table
+      +schema: marts
+    # Optional: specify tags for documentation or grouping
+    tags: ["warehouse"]
+    
+# Optional: specify macro paths if you use custom macros
+macro-paths: ["macros"]
+
+# Optional: default quoting
+quoting:
+  database: false
+  schema: true
+  identifier: true
+
+# Optional: incremental model defaults
+# incremental:
+#   +unique_key: message_id
