@@ -70,7 +70,6 @@ Key business questions addressed:
 - CheMed Telegram Channel – Medical products
 - Lobelia Cosmetics – Cosmetics & health products
 - Tikvah Pharma – Pharmaceuticals
-- Additional channels from [et.tgstat.com/medicine](https://et.tgstat.com/medicine)
 
 **Data Fields Collected:**
 
