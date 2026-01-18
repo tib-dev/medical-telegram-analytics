@@ -1,0 +1,17 @@
+telegram:
+  # List of Telegram channels to scrape
+  channels:
+    - "@chemed123"
+    - "@lobelia4cosmetics"
+    - "@tikvahpharma"
+  options:
+    include_media: true
+    include_text: true
+
+limits:
+  # Number of messages per channel to scrape; null = all
+  max_messages_per_channel: 1000
+
+runtime:
+  timezone: UTC
+  date_partition_format: "%Y-%m-%d"
