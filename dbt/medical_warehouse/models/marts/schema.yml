@@ -1,0 +1,210 @@
+version: 2
+
+models:
+
+  # ======================================================
+  # STAGING MODEL
+  # ======================================================
+  - name: stg_telegram_messages
+    description: "Cleaned and standardized Telegram messages from the raw layer"
+
+    columns:
+      - name: message_id
+        description: "Unique Telegram message ID from Telegram"
+        tests:
+          - not_null
+          - unique
+
+      - name: channel_name
+        description: "Normalized Telegram channel name"
+        tests:
+          - not_null
+
+      - name: message_date
+        description: "Timestamp when the message was posted"
+        tests:
+          - not_null
+
+      - name: message_text
+        description: "Raw message text content"
+
+      - name: view_count
+        description: "Number of views for the message"
+        tests:
+          - not_null
+
+      - name: forward_count
+        description: "Number of times the message was forwarded"
+        tests:
+          - not_null
+
+      - name: has_media
+        description: "Indicates whether the message contains any media"
+        tests:
+          - not_null
+
+      - name: image_path
+        description: "Filesystem path to downloaded image (if any)"
+
+      - name: message_length
+        description: "Character length of the message text"
+
+      - name: has_image
+        description: "Derived boolean flag indicating image presence"
+        tests:
+          - not_null
+
+  # ======================================================
+  # DIMENSION: CHANNELS
+  # ======================================================
+  - name: dim_channels
+    description: "Dimension table describing Telegram channels"
+
+    columns:
+      - name: channel_key
+        description: "Surrogate primary key for the channel"
+        tests:
+          - not_null
+          - unique
+
+      - name: channel_name
+        description: "Telegram channel name"
+        tests:
+          - not_null
+          - unique
+
+      - name: channel_type
+        description: "Business category of the channel (Medical, Pharma, Cosmetics)"
+        tests:
+          - not_null
+
+      - name: first_post_date
+        description: "Date of the first observed message in the channel"
+        tests:
+          - not_null
+
+      - name: last_post_date
+        description: "Date of the most recent message in the channel"
+        tests:
+          - not_null
+
+      - name: total_posts
+        description: "Total number of messages posted by the channel"
+        tests:
+          - not_null
+
+      - name: avg_views
+        description: "Average number of views per message in the channel"
+
+  # ======================================================
+  # DIMENSION: DATES
+  # ======================================================
+  - name: dim_dates
+    description: "Date dimension table for time-based analysis"
+
+    columns:
+      - name: date_key
+        description: "Surrogate primary key for the date"
+        tests:
+          - not_null
+          - unique
+
+      - name: full_date
+        description: "Calendar date"
+        tests:
+          - not_null
+          - unique
+
+      - name: day_of_week
+        description: "Day of week number (0–6)"
+        tests:
+          - not_null
+
+      - name: day_name
+        description: "Name of the day (Monday–Sunday)"
+        tests:
+          - not_null
+
+      - name: week_of_year
+        description: "ISO week number"
+        tests:
+          - not_null
+
+      - name: month
+        description: "Month number (1–12)"
+        tests:
+          - not_null
+
+      - name: month_name
+        description: "Month name"
+        tests:
+          - not_null
+
+      - name: quarter
+        description: "Quarter of the year (1–4)"
+        tests:
+          - not_null
+
+      - name: year
+        description: "Calendar year"
+        tests:
+          - not_null
+
+      - name: is_weekend
+        description: "Boolean flag indicating weekend"
+        tests:
+          - not_null
+
+  # ======================================================
+  # FACT TABLE
+  # ======================================================
+  - name: fct_messages
+    description: "Fact table containing metrics for each Telegram message"
+
+    columns:
+      - name: message_id
+        description: "Natural key from Telegram identifying the message"
+        tests:
+          - not_null
+          - unique
+
+      - name: channel_key
+        description: "Foreign key referencing dim_channels"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_channels')
+                field: channel_key
+
+      - name: date_key
+        description: "Foreign key referencing dim_dates"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dates')
+                field: date_key
+
+      - name: message_text
+        description: "Text content of the message"
+
+      - name: message_length
+        description: "Length of the message text"
+        tests:
+          - not_null
+
+      - name: view_count
+        description: "Number of views for the message"
+        tests:
+          - not_null
+
+      - name: forward_count
+        description: "Number of forwards for the message"
+        tests:
+          - not_null
+
+      - name: has_image
+        description: "Indicates whether the message contains an image"
+        tests:
+          - not_null
